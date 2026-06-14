@@ -100,6 +100,12 @@ description: 生成 Anima 文生图模型提示词的技能。基于 Anima3 v3.0
 
 完整模板和标签库位于 `references/anima3-template.md`，按章节导航：
 
+### 在线资源
+
+| 站点 | 用途 |
+|---|---|
+| [animadex.net](https://animadex.net/) | ANIMA AI 模型角色与画师目录站，可查阅角色标签、画师作品参考、浏览公开收藏集，辅助 prompt 创作
+
 | § | 章节 | 内容 |
 |---|---|---|
 | 0 | 快速开始 | 模板使用方式 |

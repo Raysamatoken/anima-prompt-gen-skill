@@ -54,6 +54,12 @@ anima-prompt-gen-skill/
 | §11-13 | 镜头、场景、细节与氛围 |
 | §14 | 12 个特殊主题跨槽位配方 |
 
+## 在线资源
+
+| 站点 | 用途 |
+|---|---|
+| [animadex.net](https://animadex.net/) | ANIMA AI 模型角色与画师目录站，查阅角色标签、画师作品参考、浏览公开收藏，辅助 prompt 创作 |
+
 ## 在 Codex 中使用
 
 ```markdown
