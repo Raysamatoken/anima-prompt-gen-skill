@@ -1,131 +1,132 @@
 ---
 name: anima-prompt-gen
-description: Generate Anima text-to-image model prompts using the structured v3.0 template system. Use when the user wants to create prompts for Anima model image generation, especially when they provide a Chinese scene description that needs to be compiled into an English prompt following the Anima3 slot-based tag assembly format. The skill provides the full template framework including slot order, decision trees, conflict tables, tag libraries for appearance/clothing/pose/expression/camera/scene/detail, special theme recipes, and a final self-check protocol.
+description: 生成 Anima 文生图模型提示词的技能。基于 Anima3 v3.0 模板系统的槽位填充、决策树匹配、冲突检查和自检验证流程。当用户需要为 Anima 模型编写结构化的英文提示词时使用，特别是用户提供了中文场景描述需要编译为符合 Anima3 格式的英文 prompt 时。
 ---
 
-# Anima Prompt Generator
+# Anima 提示词生成器
 
-Generates Anima model prompts by compiling user requirements into structured English prompts using the Anima3 v3.0 template system.
+将用户需求编译为符合 Anima3 v3.0 模板的结构化英文提示词。
 
-## Quick Workflow
+## 快速工作流
 
 ```
-User request → §5 Decision Tree (match scene type) → §4 Slot Order (assembly sequence)
-→ §6-13 Tag Libraries (fill each slot) → §3 Self-Check (6-point validation)
-→ §3.1 Conflict Check → Single-line output
+用户需求 → §5 决策树（匹配场景类型）→ §4 槽位顺序（组装序列）
+→ §6-13 标签库（填充各槽位）→ §3 自检（6 项验证）
+→ §3.1 冲突检查 → 单行输出
 ```
 
-## Output Protocol (Hard Rules)
+## 输出协议（硬规则）
 
-| Rule | Detail |
+| 规则 | 说明 |
 |---|---|
-| Lines | **1 line only**, no line breaks |
-| Separator | `, ` (comma + space) between tags |
-| Case | **All lowercase** (except `score_` tags which keep underscores) |
-| Weights | **No** `(tag:1.2)` syntax — field order is implicit weight |
-| Banned | quality words (`masterpiece, best quality, score_9`), artist names, **lighting/tone tags** (`sunlight, moonlight, rim light, warm lighting` — built into lora). Environmental weather is allowed (`rain, snow, fog, steam`) |
-| Output form | Plain text, one line. No code fence, no markdown, no preamble |
-| Natural language | For complex scenarios (multi-person attribution, complex composition, special poses, panel relationships): **use English natural-language short phrases at the very end of the prompt** (after all tags) |
+| 行数 | **仅 1 行**，无换行 |
+| 分隔符 | 标签间用 `, `（逗号 + 空格） |
+| 大小写 | **全小写**（`score_` 标签保留下划线） |
+| 权重 | **禁止** `(tag:1.2)` 语法——字段顺序即隐式权重 |
+| 禁止输出 | 质量词（`masterpiece, best quality, score_9`）、画师名、**光线/色调标签**（`sunlight, moonlight, rim light, warm lighting`——lora 已内置）。环境天气描写允许（`rain, snow, fog, steam`） |
+| 输出形式 | 纯文本一行，无代码块、无 markdown、无引导语 |
+| 自然语言补充 | 复杂场景（多人归属、复杂构图、特殊姿势、分镜关系）：**末尾用英文自然语言短句补充**（所有标签之后） |
 
-## Slot Order (Assembly Sequence)
+## 槽位顺序（组装序列）
 
-Tags must be filled in strict slot order. Earlier slots carry more weight.
+标签必须严格按以下顺序填充。靠前的槽位权重更高。
 
 ```
-[count/gender] → [character/series] → [appearance] → [clothing/state]
-→ [pose/action/sex] → [expression/reaction] → [camera/shot]
-→ [scene/environment] → [detail/mood]
-→ [natural language: relationship/action/story supplement]
+[人数/性别] → [角色/系列] → [外貌] → [服装/状态]
+→ [姿势/动作/性行为] → [表情/反应] → [镜头/视角]
+→ [场景/环境] → [细节/氛围]
+→ [自然语言补充：关系/动作/剧情]
 ```
 
-### Tag Count Control
+### 标签数量控制
 
-| Complexity | Total tags | Notes |
+| 复杂度 | 总标签数 | 说明 |
 |---|---|---|
-| Simple (solo display/tease/exposure/masturbation) | 16-30 | Less dimensions |
-| Standard (duo sex/foreplay) | 22-38 | Pose + expression + liquids expand |
-| Complex (multi-person/special themes/story key visual) | 30-48 | Cross-slot expansion |
+| 简单（单人展示/诱惑/暴露/自慰） | 16-30 | 维度较少 |
+| 标准（双人性交/前戏） | 22-38 | 体位+表情+液体为核心，服装维度膨胀 |
+| 复杂（多人/特殊主题/剧情主视觉） | 30-48 | 跨槽位 |
 
-### Per-slot tag count guidance
+### 各槽位标签数量指引
 
-| Slot | Min | Max | Notes |
+| 槽位 | 最少 | 最多 | 说明 |
 |---|---|---|---|
-| count/gender | 2 | 4 | Fixed format, required |
-| character/series | 0 | 2 | IP characters only |
-| appearance | 3 | 8 | Hair 2 + eyes 1 + body 1 + skin 1 + non-human/marks as needed |
-| clothing/state | 2 | 10 | Base + material + 1-3 mod dimensions + hosiery/shoes — naturally high count |
-| pose/action/sex | 2 | 8 | Core pose 2 + auxiliary actions + variant dimensions |
-| expression/reaction | 1 | 4 | Main expression 1 + at most 3 body reactions/liquids |
-| camera/shot | 1 | 5 | Shot type required, angle/POV as needed |
-| scene/environment | 2 | 6 | Main location + environment elements + time/weather |
+| 人数/性别 | 2 | 4 | 固定格式，不可省略 |
+| 角色/系列 | 0 | 2 | 仅 IP 角色使用 |
+| 外貌 | 3 | 8 | 头发 2 + 眼睛 1 + 体型 1 + 肤色 1 + 非人特征/标记按需 |
+| 服装/状态 | 2 | 10 | 基础服装+材质+1-3 个改造维度+丝袜鞋类——天然标签多 |
+| 姿势/动作/性行为 | 2 | 8 | 核心体位 2 + 辅助动作+变体维度 |
+| 表情/反应 | 1 | 4 | 主表情 1 + 最多 3 个身体反应/液体 |
+| 镜头/视角 | 1 | 5 | 景别必填，角度/POV 按需 |
+| 场景/环境 | 2 | 6 | 主场所+环境元素+时辰/天气 |
 
-### Default Eye Contact Rule
+### 视线方向默认规则
 
-**Solo**: Always inject `direct eye contact, facing viewer` unless the user explicitly requests `from behind, facing away, profile, from side`.
+**单人**：除非用户明确要求「背影/背对/转身离开/侧脸/profile/from behind」，否则必须注入 `direct eye contact, facing viewer`。
 
-**Multi-person**: Not mandatory. Use `looking at another` or as specified.
+**多人**：不强制注入。根据角色间互动关系选择合适标签（如 `looking at another`），或由用户指定。
 
-### Natural Language Usage
+### 自然语言使用
 
-Place natural language supplement **at the very end** of the prompt, after all tags. Use for:
-- Multi-person action relationships (`one reaches toward the viewer while the other watches in silence`)
-- Complex composition / spatial relationships (`girl sitting on boy's lap facing him`)
-- Special pose combinations where tag stacking loses clarity (`girl pinning wolf boy down while riding him`)
-- Panel / contrast relationships (`left panel: dressed, right panel: nude`)
-- Viewer narrative relationship (`as if inviting the viewer to escape together, as if daring the viewer to come closer`)
+自然语言短句统一放在 prompt **末尾**（所有标签之后），用于：
+- 角色间动作关系（`one reaches toward the viewer while the other watches in silence`）
+- 复杂构图/空间关系（`girl sitting on boy's lap facing him`）
+- 特殊姿势组合（`girl pinning wolf boy down while riding him`）
+- 分镜/对比关系（`left panel: dressed, right panel: nude`）
+- 观众叙事关系（`as if inviting the viewer to escape together`）
 
-### Multi-person Rules
+### 多人场景角色规则
 
-**Critical**: For multi-person scenes, always supplement key appearance for each character. Structure: count → character A appearance phrase → character B appearance phrase → shared tags (pose, camera, scene) → relationship/action description (natural language at end).
+**极重要**：多人场景中必须为每个角色补充关键外观描述。
+结构：人数 → 角色 A 外观短语 → 角色 B 外观短语 → 共享标签（体位、镜头、场景等）→ 关系/动作/剧情描述（自然语言，放末尾）
 
-Format: `2girls, raiden shogun with long purple hair and purple eyes, yae miko with long pink hair and fox ears, skirt lift, shrine, one playfully lifting the other's skirt with a mischievous smirk while the other looks shy and embarrassed`
+格式：`2girls, raiden shogun with long purple hair and purple eyes, yae miko with long pink hair and fox ears, skirt lift, shrine, one playfully lifting the other's skirt with a mischievous smirk while the other looks shy and embarrassed`
 
-### Cross-slot Style Consistency
+### 跨槽位风格一致性
 
-Clothing, scene, and detail/mood must be logically consistent. Ancient style with ancient (hanfu + ancient shrine), cyber with cyber (latex bodysuit + cyberpunk city), daily with daily (school uniform + classroom). Do NOT mix hanfu with cyberpunk city.
+服装、场景、细节/氛围必须逻辑一致。古风配古风（hanfu + ancient shrine + 水墨空灵），赛博配赛博（latex bodysuit + cyberpunk city + 数字故障），日常配日常（school uniform + classroom + 自然质感）。不要出现 hanfu 站在 cyberpunk city 里这类矛盾。
 
-## Self-Check (Before Output)
+## 输出前自检（6 项）
 
-| # | Check | Pass criteria |
+| # | 检查项 | 通过标准 |
 |---|---|---|
-| 1 | Person count consistency | `count/gender` tag count matches actual character count |
-| 2 | Conflict check | No view/identity/clothing/pose/detail conflicts per §3.1 |
-| 3 | Duplicate tags | Same tag does not appear twice |
-| 4 | Scene plausibility | Scene tags physically compatible with action tags |
-| 5 | Lighting ban | No lighting/shadow/tone tags |
-| 6 | Tag count | Within complexity range (16-30/22-38/30-48) |
+| 1 | 人数一致性 | `count/gender` 标签与实际角色数一致 |
+| 2 | 互斥冲突 | 对照 §3.1 互斥表，无视角/身份/服装/动作/细节矛盾 |
+| 3 | 重复标签 | 同一标签不出现两次 |
+| 4 | 场景合理性 | 场景标签与动作标签物理兼容 |
+| 5 | 灯光禁令 | 无任何光线/光影/色调标签 |
+| 6 | 标签总数 | 在复杂度范围内（16-30 / 22-38 / 30-48） |
 
-## Reference Files
+## 参考文件
 
-The full template with complete tag libraries is in `references/anima3-template.md`. Navigate by section:
+完整模板和标签库位于 `references/anima3-template.md`，按章节导航：
 
-| § | Section | Content |
+| § | 章节 | 内容 |
 |---|---|---|
-| 0 | Quick Start | How to use the template |
-| 1 | ROLE | AI behavior guidelines |
-| 2 | OUTPUT PROTOCOL | Output format rules (summarized above) |
-| 3 | SELF-CHECK | Validation protocol (summarized above) |
-| 3.1 | CONFLICT TABLE | Mutually exclusive tag pairs |
-| 4 | SLOT ORDER | Tag assembly rules (summarized above) |
-| 5 | DECISION TREE | 7 scene-type decision paths |
-| 6 | COUNT & IDENTITY | Tag library: count/gender, character/series |
-| 7 | APPEARANCE | Tag library: hair/eyes/body/skin/marks |
-| 8 | CLOTHING & STATE | Tag library: clothing types/materials/states/7-dimension modification/contrast |
-| 9 | POSE & ACTION & SEX | Tag library: solo/duo foreplay/duo sex/multi/yuri |
-| 10 | EXPRESSION & REACTION | Tag library: expression intensity L1-L4/body reactions/liquids/marks |
-| 11 | CAMERA & SHOT | Tag library: shot types/angles/POV/composition/body focus |
-| 12 | SCENE & ENVIRONMENT | Tag library: locations/weather/time/scene details |
-| 13 | DETAIL & MOOD | Tag library: texture/motion/optical effects/mood |
-| 14 | SPECIAL THEME | Cross-slot recipes: NTR/BDSM/RBQ/futa/异种/调教/胁迫/偷窥/事后/另类日常/大车小孩/隐奸 |
-| 15 | EXAMPLES | Placeholder for verified full examples |
+| 0 | 快速开始 | 模板使用方式 |
+| 1 | ROLE | AI 行为准则 |
+| 2 | 输出协议 | 格式硬规则（已在上方摘要） |
+| 3 | 自检 | 验证协议（已在上方摘要） |
+| 3.1 | 冲突表 | 互斥标签对 |
+| 4 | 槽位顺序 | 标签组装规则（已在上方摘要） |
+| 5 | 决策树 | 7 类场景决策路径 |
+| 6 | 计数与身份 | 标签库：人数/性别、角色/系列 |
+| 7 | 外貌 | 标签库：发色发型/瞳色/体型/肤色/标记 |
+| 8 | 服装与状态 | 标签库：服装类型/材质/状态/改造/反差 |
+| 9 | 姿势与动作 | 标签库：单人/双人前戏/双人正戏/多人/百合 |
+| 10 | 表情与反应 | 标签库：表情强度 L1-L4/身体反应/液体/痕迹 |
+| 11 | 镜头与视角 | 标签库：景别/角度/POV/构图/身体聚焦 |
+| 12 | 场景与环境 | 标签库：场所/天气/时辰/场景细节 |
+| 13 | 细节与氛围 | 标签库：质感/运动/光学/数字效果/氛围基调 |
+| 14 | 特殊主题 | 跨槽位配方：NTR/束缚/RBQ/男娘扶她/异种/调教/胁迫/偷窥/事后/另类日常/大车小孩/隐奸 |
+| 15 | 示例 | 占位：跑图验证后的完整案例 |
 
-## Using the Reference
+## 使用参考文件
 
-1. Read the user's scene description
-2. Match scene type using §5 Decision Tree in the reference file
-3. Determine slot filling strategy from the decision tree
-4. Fill each slot using tag libraries (§6-13)
-5. If the scene matches a special theme (§14), consult it first for cross-slot recipes
-6. Run §3 self-check
-7. Check §3.1 Conflict Table
-8. Output single line of comma-separated lowercase tags
+1. 读取用户场景描述
+2. 用 §5 决策树匹配场景类型
+3. 从决策树确定各槽位填充策略
+4. 从 §6-13 标签库填充每个槽位
+5. 若匹配特殊主题（§14），先查配方再逐槽填充
+6. 执行 §3 自检
+7. 检查 §3.1 冲突表
+8. 输出单行逗号分隔的全小写标签

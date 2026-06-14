@@ -1,4 +1,4 @@
 interface:
-  display_name: "Anima Prompt Generator"
-  short_description: "Structured Anima model prompt generation with tag libraries"
-  default_prompt: "Use $anima-prompt-gen to generate Anima model prompts following the structured v3.0 template. Reference the tag libraries in /references and follow the slot-based assembly workflow."
+  display_name: "Anima 提示词生成器"
+  short_description: "为 Anima 文生图模型生成结构化提示词，基于 v3.0 模板系统"
+  default_prompt: "使用 $anima-prompt-gen 为 Anima 模型生成结构化提示词。遵循 v3.0 模板的槽位填充流程，在 /references 中查询标签库。"
