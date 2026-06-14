@@ -1,0 +1,4 @@
+interface:
+  display_name: "Anima Prompt Generator"
+  short_description: "Structured Anima model prompt generation with tag libraries"
+  default_prompt: "Use $anima-prompt-gen to generate Anima model prompts following the structured v3.0 template. Reference the tag libraries in /references and follow the slot-based assembly workflow."
